@@ -12,6 +12,9 @@ const sortSelect = document.getElementById('sortSelect');
 const modal = document.getElementById('modal');
 const modalTitle = document.getElementById('modalTitle');
 const modalBody = document.getElementById('modalBody');
+const roomInput = document.getElementById('roomInput');
+const roomBtn = document.getElementById('roomBtn');
+const roomLabel = document.getElementById('roomLabel');
 
 const RATING_LABELS = ['Sem avaliação', 'Péssimo', 'Ruim', 'Regular', 'Bom', 'Excelente'];
 
@@ -246,5 +249,20 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2800);
 }
 
-// ── INIT ──────────────────────────────────────────────
-loadItems();
+async function applyRoom() {
+  const room = roomInput.value.trim().toLowerCase() || 'default';
+  roomInput.value = room;
+  await mediaApi.setRoom(room);
+  roomLabel.textContent = `Sala: ${room}`;
+  await loadItems();
+}
+
+roomBtn.addEventListener('click', applyRoom);
+roomInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyRoom(); });
+
+(async function init() {
+  const room = await mediaApi.getRoom();
+  roomInput.value = room;
+  roomLabel.textContent = `Sala: ${room}`;
+  await loadItems();
+})();

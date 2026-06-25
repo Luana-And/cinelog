@@ -1,4 +1,13 @@
 const STORAGE_KEY = 'cinelog-items-v1';
+const SYNC_ROOM_KEY = 'cinelog-room-v1';
+
+function getRoom() {
+  return localStorage.getItem(SYNC_ROOM_KEY) || 'default';
+}
+
+function setRoom(room) {
+  localStorage.setItem(SYNC_ROOM_KEY, room);
+}
 
 function readItems() {
   try {
@@ -10,6 +19,29 @@ function readItems() {
 
 function writeItems(items) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
+async function syncRemote(items) {
+  const room = getRoom();
+  try {
+    await fetch(`/api/sync?room=${encodeURIComponent(room)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items })
+    });
+  } catch {}
+}
+
+async function syncLocal() {
+  const room = getRoom();
+  try {
+    const response = await fetch(`/api/sync?room=${encodeURIComponent(room)}`);
+    if (!response.ok) return;
+    const data = await response.json();
+    if (Array.isArray(data.items)) {
+      writeItems(data.items);
+    }
+  } catch {}
 }
 
 function nextId(items) {
@@ -28,7 +60,17 @@ function normalize(item) {
 }
 
 export const mediaApi = {
-  getAll: () => Promise.resolve(readItems().map(normalize)),
+  setRoom: (room) => {
+    const normalized = (room || 'default').toString().trim().toLowerCase();
+    setRoom(normalized || 'default');
+    return Promise.resolve(normalized);
+  },
+
+  getRoom: () => Promise.resolve(getRoom()),
+  getAll: async () => {
+    await syncLocal();
+    return readItems().map(normalize);
+  },
 
   create: (title, type) => {
     const items = readItems();
@@ -42,6 +84,7 @@ export const mediaApi = {
     });
     items.unshift(item);
     writeItems(items);
+    syncRemote(items);
     return Promise.resolve(item);
   },
 
@@ -52,12 +95,14 @@ export const mediaApi = {
     item.rating = Number(rating || 0);
     item.notes = notes || '';
     writeItems(items);
+    syncRemote(items);
     return Promise.resolve(normalize(item));
   },
 
   remove: (id) => {
     const items = readItems().filter(i => Number(i.id) !== Number(id));
     writeItems(items);
+    syncRemote(items);
     return Promise.resolve(null);
   },
 
