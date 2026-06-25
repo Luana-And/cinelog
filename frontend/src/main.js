@@ -254,7 +254,9 @@ async function applyRoom() {
   const room = roomInput.value.trim().toLowerCase() || 'default';
   roomInput.value = room;
   await mediaApi.setRoom(room);
-  roomLabel.textContent = `Sala: ${room}`;
+  const url = new URL(window.location.href);
+  url.searchParams.set('room', room);
+  window.history.replaceState({}, '', url.toString());
   await loadItems();
 }
 
@@ -277,8 +279,10 @@ copyRoomBtn.addEventListener('click', async () => {
 roomInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyRoom(); });
 
 (async function init() {
-  const room = await mediaApi.getRoom();
+  const params = new URLSearchParams(window.location.search);
+  const roomFromUrl = params.get('room');
+  const room = roomFromUrl || await mediaApi.getRoom();
   roomInput.value = room;
-  roomLabel.textContent = `Sala: ${room}`;
+  await mediaApi.setRoom(room);
   await loadItems();
 })();
