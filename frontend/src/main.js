@@ -14,7 +14,8 @@ const modalTitle = document.getElementById('modalTitle');
 const modalBody = document.getElementById('modalBody');
 const roomInput = document.getElementById('roomInput');
 const roomBtn = document.getElementById('roomBtn');
-const roomLabel = document.getElementById('roomLabel');
+const randomRoomBtn = document.getElementById('randomRoomBtn');
+const copyRoomBtn = document.getElementById('copyRoomBtn');
 
 const RATING_LABELS = ['Sem avaliação', 'Péssimo', 'Ruim', 'Regular', 'Bom', 'Excelente'];
 
@@ -258,6 +259,21 @@ async function applyRoom() {
 }
 
 roomBtn.addEventListener('click', applyRoom);
+randomRoomBtn.addEventListener('click', () => {
+  const randomName = `sala-${Math.random().toString(36).slice(2, 8)}`;
+  roomInput.value = randomName;
+  applyRoom();
+});
+copyRoomBtn.addEventListener('click', async () => {
+  const room = roomInput.value.trim().toLowerCase() || 'default';
+  const url = `${window.location.origin}?room=${encodeURIComponent(room)}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    showToast('Link da sala copiado!');
+  } catch {
+    showToast('Não foi possível copiar o link.');
+  }
+});
 roomInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyRoom(); });
 
 (async function init() {
