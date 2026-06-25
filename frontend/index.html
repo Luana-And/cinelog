@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CineLog</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="logo">Cine<span>Log</span></div>
+    <div class="header-stats" id="headerStats">
+      <span><strong id="totalCount">0</strong> títulos</span>
+      <span><strong id="movieCount">0</strong> filmes</span>
+      <span><strong id="seriesCount">0</strong> séries</span>
+      <span>Média: <strong id="avgRating">—</strong> ★</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="add-section">
+      <h2>Adicionar título</h2>
+      <div class="form-row">
+        <div class="field">
+          <label>Nome do título</label>
+          <input type="text" id="titleInput" placeholder="Ex: Oppenheimer, Breaking Bad…" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Tipo</label>
+          <select id="typeSelect">
+            <option value="filme">🎬 Filme</option>
+            <option value="série">📺 Série</option>
+          </select>
+        </div>
+        <button class="btn-add" id="addBtn">+ Adicionar</button>
+      </div>
+    </div>
+
+    <div class="filters">
+      <button class="filter-btn active" data-filter="todos">Todos</button>
+      <button class="filter-btn" data-filter="filme">Filmes</button>
+      <button class="filter-btn" data-filter="série">Séries</button>
+      <button class="filter-btn" data-filter="5">5 estrelas ★</button>
+      <div class="sort-wrap">
+        <span class="sort-label">Ordenar:</span>
+        <select class="sort-select" id="sortSelect">
+          <option value="date">Recentes</option>
+          <option value="rating">Avaliação</option>
+          <option value="name">Nome</option>
+        </select>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar…">
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <div class="modal-overlay" id="modal" style="display:none">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">✕</button>
+      <h3 id="modalTitle">Análise IA</h3>
+      <div id="modalBody" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
