@@ -1,44 +1,83 @@
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5189/api/media').replace(/\/$/, '');
+const STORAGE_KEY = 'cinelog-items-v1';
 
-async function handle(resp) {
-  if (!resp.ok) {
-    let msg = `Erro ${resp.status}`;
-    try {
-      const data = await resp.json();
-      msg = data.error || msg;
-    } catch {}
-    throw new Error(msg);
+function readItems() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  } catch {
+    return [];
   }
-  if (resp.status === 204) return null;
-  return resp.json();
+}
+
+function writeItems(items) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+}
+
+function nextId(items) {
+  return items.reduce((max, item) => Math.max(max, Number(item.id) || 0), 0) + 1;
+}
+
+function normalize(item) {
+  return {
+    id: Number(item.id),
+    title: item.title,
+    type: item.type,
+    rating: Number(item.rating || 0),
+    notes: item.notes || '',
+    createdAt: item.createdAt || new Date().toISOString()
+  };
 }
 
 export const mediaApi = {
-  getAll: (params = {}) => {
-    const qs = new URLSearchParams(params).toString();
-    return fetch(`${BASE_URL}${qs ? '?' + qs : ''}`).then(handle);
+  getAll: () => Promise.resolve(readItems().map(normalize)),
+
+  create: (title, type) => {
+    const items = readItems();
+    const item = normalize({
+      id: nextId(items),
+      title,
+      type,
+      rating: 0,
+      notes: '',
+      createdAt: new Date().toISOString()
+    });
+    items.unshift(item);
+    writeItems(items);
+    return Promise.resolve(item);
   },
 
-  create: (title, type) =>
-    fetch(BASE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, type })
-    }).then(handle),
+  update: (id, rating, notes) => {
+    const items = readItems();
+    const item = items.find(i => Number(i.id) === Number(id));
+    if (!item) return Promise.reject(new Error('Item não encontrado'));
+    item.rating = Number(rating || 0);
+    item.notes = notes || '';
+    writeItems(items);
+    return Promise.resolve(normalize(item));
+  },
 
-  update: (id, rating, notes) =>
-    fetch(`${BASE_URL}/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating, notes })
-    }).then(handle),
+  remove: (id) => {
+    const items = readItems().filter(i => Number(i.id) !== Number(id));
+    writeItems(items);
+    return Promise.resolve(null);
+  },
 
-  remove: (id) =>
-    fetch(`${BASE_URL}/${id}`, { method: 'DELETE' }).then(handle),
+  analyze: (id) => {
+    const items = readItems();
+    const item = items.find(i => Number(i.id) === Number(id));
+    if (!item) return Promise.reject(new Error('Item não encontrado'));
 
-  analyze: (id) =>
-    fetch(`${BASE_URL}/${id}/analyze`, { method: 'POST' }).then(handle),
+    const typeLabel = item.type === 'filme' ? 'filme' : 'série';
+    const analysis = `Análise rápida para ${typeLabel} "${item.title}": este título tem um perfil interessante para sua lista. ${item.notes ? 'Suas anotações mostram uma boa direção para acompanhar seu gosto.' : 'Adicione anotações para enriquecer a análise.'}`;
+    return Promise.resolve({ analysis });
+  },
 
-  stats: () =>
-    fetch(`${BASE_URL}/stats`).then(handle)
+  stats: () => {
+    const items = readItems().map(normalize);
+    const movies = items.filter(i => i.type === 'filme').length;
+    const series = items.filter(i => i.type === 'série').length;
+    const avgRating = items.length
+      ? (items.reduce((sum, i) => sum + i.rating, 0) / items.length).toFixed(1)
+      : '—';
+    return Promise.resolve({ total: items.length, movies, series, avgRating });
+  }
 };

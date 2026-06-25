@@ -24,8 +24,8 @@ async function loadItems() {
   } catch (e) {
     grid.innerHTML = `<div class="empty">
       <div class="empty-icon">⚠️</div>
-      <h3>Não foi possível conectar ao backend</h3>
-      <p>Verifique se a API C# está rodando ou configure a variável VITE_API_URL para a URL do backend.</p>
+      <h3>Não foi possível carregar sua lista</h3>
+      <p>Os dados ficam salvos no navegador e a aplicação funciona diretamente no Vercel.</p>
     </div>`;
   }
 }
