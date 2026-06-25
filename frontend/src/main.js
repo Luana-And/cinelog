@@ -25,7 +25,7 @@ async function loadItems() {
     grid.innerHTML = `<div class="empty">
       <div class="empty-icon">⚠️</div>
       <h3>Não foi possível conectar ao backend</h3>
-      <p>Verifique se a API C# está rodando em http://localhost:5189</p>
+      <p>Verifique se a API C# está rodando ou configure a variável VITE_API_URL para a URL do backend.</p>
     </div>`;
   }
 }

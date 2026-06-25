@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5189/api/media';
+const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5189/api/media').replace(/\/$/, '');
 
 async function handle(resp) {
   if (!resp.ok) {
