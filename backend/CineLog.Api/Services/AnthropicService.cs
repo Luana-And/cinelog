@@ -11,7 +11,7 @@ public class AnthropicService(IHttpClientFactory factory, IConfiguration config)
     {
         var apiKey = config["ANTHROPIC_API_KEY"];
         if (string.IsNullOrWhiteSpace(apiKey) || apiKey == "COLOQUE_SUA_API_KEY_AQUI")
-            throw new InvalidOperationException("ANTHROPIC_API_KEY não configurada em appsettings.json.");
+            throw new InvalidOperationException("ANTHROPIC_API_KEY não configurada. Defina a variável de ambiente ANTHROPIC_API_KEY no Render/Railway.");
 
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Add("x-api-key", apiKey);

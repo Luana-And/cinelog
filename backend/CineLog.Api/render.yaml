@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: cinelog-api
+    env: dotnet
+    plan: free
+    buildCommand: dotnet publish -c Release
+    startCommand: dotnet ./bin/Release/net8.0/publish/CineLog.Api.dll
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
