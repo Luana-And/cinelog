@@ -16,6 +16,7 @@ const roomInput = document.getElementById('roomInput');
 const roomBtn = document.getElementById('roomBtn');
 const randomRoomBtn = document.getElementById('randomRoomBtn');
 const copyRoomBtn = document.getElementById('copyRoomBtn');
+const roomStatus = document.getElementById('roomStatus');
 
 const RATING_LABELS = ['Sem avaliação', 'Péssimo', 'Ruim', 'Regular', 'Bom', 'Excelente'];
 
@@ -250,21 +251,27 @@ function showToast(msg) {
   setTimeout(() => t.remove(), 2800);
 }
 
+function updateRoomStatus(room) {
+  roomStatus.textContent = `Sala atual: ${room}`;
+}
+
 async function applyRoom() {
   const room = roomInput.value.trim().toLowerCase() || 'default';
   roomInput.value = room;
   await mediaApi.setRoom(room);
+  updateRoomStatus(room);
   const url = new URL(window.location.href);
   url.searchParams.set('room', room);
   window.history.replaceState({}, '', url.toString());
   await loadItems();
+  showToast(`Sala alterada para: ${room}`);
 }
 
 roomBtn.addEventListener('click', applyRoom);
 randomRoomBtn.addEventListener('click', () => {
   const randomName = `sala-${Math.random().toString(36).slice(2, 8)}`;
   roomInput.value = randomName;
-  applyRoom();
+  void applyRoom();
 });
 copyRoomBtn.addEventListener('click', async () => {
   const room = roomInput.value.trim().toLowerCase() || 'default';
@@ -284,5 +291,6 @@ roomInput.addEventListener('keydown', e => { if (e.key === 'Enter') applyRoom();
   const room = roomFromUrl || await mediaApi.getRoom();
   roomInput.value = room;
   await mediaApi.setRoom(room);
+  updateRoomStatus(room);
   await loadItems();
 })();
